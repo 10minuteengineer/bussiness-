@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cylinder Management App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        table th {
+            background-color: #f8f9fa;
+        }
+        .btn {
+            padding: 10px 15px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn.danger {
+            background-color: #dc3545;
+        }
+        .revenue {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cylinder Management App</h1>
+
+        <div id="loginForm" style="display: none;">
+            <h2>Admin Login</h2>
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" placeholder="Enter password">
+            </div>
+            <button class="btn" onclick="login()">Login</button>
+        </div>
+
+        <div id="app" style="display: none;">
+            <h2>Stock Management</h2>
+            <div class="form-group">
+                <label for="stockType">Cylinder Type:</label>
+                <select id="stockType">
+                    <option value="HP">HP</option>
+                    <option value="Bharat">Bharat</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="stockCount">Count:</label>
+                <input type="number" id="stockCount" placeholder="Enter count of cylinders to add">
+            </div>
+            <button class="btn" onclick="addStock()">Add to Stock</button>
+
+            <h2>Customer Transactions</h2>
+            <div class="form-group">
+                <label for="customerName">Customer Name:</label>
+                <input type="text" id="customerName" placeholder="Enter customer name">
+            </div>
+            <div class="form-group">
+                <label for="cylinderType">Cylinder Type:</label>
+                <select id="cylinderType" onchange="updatePrice()">
+                    <option value="HP">HP</option>
+                    <option value="Bharat">Bharat</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="cylinderCount">Count:</label>
+                <input type="number" id="cylinderCount" placeholder="Enter count of cylinders">
+            </div>
+            <div class="form-group">
+                <label for="pricePerCylinder">Price per Cylinder:</label>
+                <input type="number" id="pricePerCylinder" placeholder="Enter price per cylinder" readonly>
+            </div>
+            <button class="btn" onclick="sellCylinder()">Sell Cylinder</button>
+
+            <h2>Stock Details</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody id="stockTable">
+                    <!-- Stock details will be dynamically added here -->
+                </tbody>
+            </table>
+
+            <h2>Customer Transactions</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Type</th>
+                        <th>Count</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionTable">
+                    <!-- Transaction details will be dynamically added here -->
+                </tbody>
+            </table>
+
+            <h2>Total Revenue</h2>
+            <p class="revenue">HP: ₹<span id="hpRevenue">0</span></p>
+            <p class="revenue">Bharat: ₹<span id="bharatRevenue">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        let stock = { HP: 0, Bharat: 0 };
+        let transactions = [];
+        let revenue = { HP: 0, Bharat: 0 };
+
+        const adminUsername = 'admin';
+        const adminPassword = 'admin';
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === adminUsername && password === adminPassword) {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+            } else {
+                alert('Invalid username or password!');
+            }
+        }
+
+        function addStock() {
+            const type = document.getElementById('stockType').value;
+            const count = parseInt(document.getElementById('stockCount').value);
+
+            if (!count || count <= 0) {
+                alert('Please enter a valid count!');
+                return;
+            }
+
+            stock[type] += count;
+            updateStockTable();
+        }
+
+        function updatePrice() {
+            const type = document.getElementById('cylinderType').value;
+            const priceField = document.getElementById('pricePerCylinder');
+
+            if (type === 'HP') {
+                priceField.value = 950;
+            } else if (type === 'Bharat') {
+                priceField.value = 900;
+            }
+        }
+
+        function sellCylinder() {
+            const customer = document.getElementById('customerName').value;
+            const type = document.getElementById('cylinderType').value;
+            const count = parseInt(document.getElementById('cylinderCount').value);
+            const price = parseFloat(document.getElementById('pricePerCylinder').value);
+
+            if (!customer || !count || count <= 0) {
+                alert('Please enter valid details!');
+                return;
+            }
+
+            if (stock[type] < count) {
+                alert(`Insufficient stock for ${type} cylinders!`);
+                return;
+            }
+
+            stock[type] -= count;
+            const total = count * price;
+            transactions.push({ customer, type, count, price, total });
+
+            revenue[type] += total;
+
+            updateStockTable();
+            updateTransactionTable();
+        }
+
+        function updateStockTable() {
+            const table = document.getElementById('stockTable');
+            table.innerHTML = '';
+
+            Object.keys(stock).forEach(type => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${type}</td>
+                    <td>${stock[type]}</td>
+                `;
+
+                table.appendChild(row);
+            });
+        }
+
+        function updateTransactionTable() {
+            const table = document.getElementById('transactionTable');
+            table.innerHTML = '';
+
+            transactions.forEach(transaction => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${transaction.customer}</td>
+                    <td>${transaction.type}</td>
+                    <td>${transaction.count}</td>
+                    <td>${transaction.price}</td>
+                    <td>${transaction.total}</td>
+                `;
+
+                table.appendChild(row);
+            });
+
+            document.getElementById('hpRevenue').textContent = revenue.HP;
+            document.getElementById('bharatRevenue').textContent = revenue.Bharat;
+        }
+
+        // Display login form initially
+        document.getElementById('loginForm').style.display = 'block';
+    </script>
+</body>
+</html>
